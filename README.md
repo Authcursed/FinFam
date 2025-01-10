@@ -1,0 +1,2 @@
+# FinFam
+ Aplikasi pencatat keuangan 
