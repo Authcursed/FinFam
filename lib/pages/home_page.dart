@@ -154,12 +154,31 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () => _changeDate(-1), // Tanggal sebelumnya
                     color: Colors.blue,
                   ),
-                  // Menampilkan tanggal
-                  Text(
-                    DateFormat('dd MMMM yyyy').format(selectedDate),
-                    style: GoogleFonts.montserrat(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                  // Menambahkan GestureDetector untuk klik tanggal
+                  GestureDetector(
+                    onTap: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate:
+                            DateTime(2000), // Tanggal awal yang diperbolehkan
+                        lastDate:
+                            DateTime(2100), // Tanggal akhir yang diperbolehkan
+                      );
+
+                      if (pickedDate != null && pickedDate != selectedDate) {
+                        setState(() {
+                          selectedDate = pickedDate;
+                        });
+                        _updateTotals(); // Perbarui total pendapatan dan pengeluaran
+                      }
+                    },
+                    child: Text(
+                      DateFormat('dd MMMM yyyy').format(selectedDate),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   IconButton(

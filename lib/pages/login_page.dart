@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'main_page.dart'; // Impor HomePage
-import '../widgets/global_drawer.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -33,13 +33,12 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       // Login menggunakan Firebase Authentication
-      final UserCredential userCredential =
-          await _auth.signInWithEmailAndPassword(
+      await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Jika login berhasil, arahkan ke HomePage
+      // Jika login berhasil, arahkan ke MainPage
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -113,8 +112,18 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login / Daftar')),
-      drawer: const GlobalDrawer(currentPage: 'LoginPage'),
+      appBar: AppBar(
+        // Judul dinamis berdasarkan status login atau register
+        title: Text(
+          isLogin ? 'Login' : 'Daftar',
+          style: GoogleFonts.montserrat(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.blue,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(

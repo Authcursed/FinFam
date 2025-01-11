@@ -159,12 +159,22 @@ class _PhonebookPageState extends State<PhonebookPage> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
               ElevatedButton(
                 onPressed: () => _addFriend(
                   _nameController.text,
                   _phoneController.text,
                 ),
+                style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 20),
+                    textStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    backgroundColor:
+                        Colors.blue, // Background color red for reset
+                    foregroundColor: Colors.white),
                 child: const Text('Tambah Teman'),
               ),
             ],

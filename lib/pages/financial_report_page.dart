@@ -15,73 +15,80 @@ class _FinancialReportPageState extends State<FinancialReportPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  String _selectedPeriod = 'weekly'; // Default ke Weekly
+  DateTime? _startDate;
+  DateTime? _endDate;
   double _totalIncome = 0.0;
   double _totalExpense = 0.0;
 
   @override
   void initState() {
     super.initState();
+    _startDate =
+        DateTime.now().subtract(Duration(days: 7)); // Default 7 hari terakhir
+    _endDate = DateTime.now();
     _fetchFinancialData();
   }
 
-  // Fungsi untuk mengambil data keuangan berdasarkan periode yang dipilih
+  // Fungsi untuk membaca dan menghitung total pendapatan & pengeluaran
   Future<void> _fetchFinancialData() async {
-    final currentUser = _auth.currentUser;
-    if (currentUser == null) return;
+    double income = 0.0;
+    double expense = 0.0;
 
-    DateTime now = DateTime.now();
-    DateTime startDate;
-    DateTime endDate;
+    try {
+      QuerySnapshot snapshot =
+          await _firestore.collection('transactions').get();
 
-    // Menentukan periode berdasarkan pilihan pengguna
-    if (_selectedPeriod == 'weekly') {
-      startDate = now.subtract(Duration(days: now.weekday - 1));
-      endDate = startDate.add(Duration(days: 7));
-    } else if (_selectedPeriod == 'monthly') {
-      startDate = DateTime(now.year, now.month, 1);
-      endDate = DateTime(now.year, now.month + 1, 0); // Hari terakhir bulan ini
-    } else {
-      // 'yearly'
-      startDate = DateTime(now.year, 1, 1);
-      endDate = DateTime(now.year + 1, 1, 1); // 1 Januari tahun depan
-    }
+      for (var doc in snapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
 
-    // Mengambil transaksi berdasarkan periode waktu yang ditentukan
-    QuerySnapshot transactionsSnapshot = await _firestore
-        .collection('transactions')
-        .where('userId', isEqualTo: currentUser.uid)
-        .where('transaction_date',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
-        .where('transaction_date', isLessThan: Timestamp.fromDate(endDate))
-        .get();
+        // Konversi transaction_date dari String ke DateTime
+        DateTime transactionDate = DateTime.parse(data['transaction_date']);
 
-    double totalIncome = 0.0;
-    double totalExpense = 0.0;
-
-    // Menghitung total pendapatan dan pengeluaran
-    for (var doc in transactionsSnapshot.docs) {
-      var data = doc.data() as Map<String, dynamic>;
-      double amount = data['amount'].toDouble();
-      int type = data['type']; // 1 = Pendapatan, 2 = Pengeluaran
-
-      if (type == 1) {
-        totalIncome += amount;
-      } else if (type == 2) {
-        totalExpense += amount;
+        // Filter transaksi berdasarkan rentang tanggal
+        if (transactionDate.isAfter(_startDate!) &&
+            transactionDate.isBefore(_endDate!.add(Duration(days: 1)))) {
+          if (data['type'] == 1) {
+            // Type 1 = Pendapatan
+            income += data['amount'].toDouble();
+          } else if (data['type'] == 2) {
+            // Type 2 = Pengeluaran
+            expense += data['amount'].toDouble();
+          }
+        }
       }
-    }
 
-    setState(() {
-      _totalIncome = totalIncome;
-      _totalExpense = totalExpense;
-    });
+      setState(() {
+        _totalIncome = income;
+        _totalExpense = expense;
+      });
+    } catch (e) {
+      print("Error fetching financial data: $e");
+    }
   }
 
-  // Menampilkan format uang dalam format Rupiah
+  // Format mata uang ke format Rupiah
   String formatCurrency(double amount) {
     final format = NumberFormat.simpleCurrency(locale: 'id_ID');
     return format.format(amount);
+  }
+
+  // Fungsi untuk memilih tanggal
+  Future<void> _selectDateRange(BuildContext context) async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      initialDateRange: DateTimeRange(start: _startDate!, end: _endDate!),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null &&
+        (picked.start != _startDate || picked.end != _endDate)) {
+      setState(() {
+        _startDate = picked.start;
+        _endDate = picked.end;
+      });
+      _fetchFinancialData();
+    }
   }
 
   @override
@@ -93,55 +100,43 @@ class _FinancialReportPageState extends State<FinancialReportPage> {
           style: GoogleFonts.montserrat(
               fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: Colors.blue,
         iconTheme: const IconThemeData(
           // Set drawer and icon color to white
           color: Colors.white,
         ),
         foregroundColor:
             Colors.white, // Set back button and actions icon color to white
+        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // Pilihan Skala Periode Laporan
+            // Pilih Tanggal
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
+              children: [
                 Text(
-                  'Periode:',
+                  'Pilih Tanggal:',
                   style: GoogleFonts.montserrat(fontSize: 16),
                 ),
-                DropdownButton<String>(
-                  value: _selectedPeriod,
-                  items: [
-                    DropdownMenuItem(
-                      value: 'weekly',
-                      child: Text('Mingguan'),
+                TextButton(
+                  onPressed: () => _selectDateRange(context),
+                  child: Text(
+                    '${DateFormat('dd MMM yyyy').format(_startDate!)} - ${DateFormat('dd MMM yyyy').format(_endDate!)}',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
                     ),
-                    DropdownMenuItem(
-                      value: 'monthly',
-                      child: Text('Bulanan'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'yearly',
-                      child: Text('Tahunan'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedPeriod = value!;
-                    });
-                    _fetchFinancialData();
-                  },
+                  ),
                 ),
               ],
             ),
             SizedBox(height: 20),
 
-            // Menampilkan Total Pendapatan dan Pengeluaran
+            // Total pendapatan, pengeluaran, dan saldo
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -198,17 +193,10 @@ class _FinancialReportPageState extends State<FinancialReportPage> {
               ),
             ),
 
-            // Menampilkan Detail Laporan (Opsional)
+            // Daftar transaksi untuk periode
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('transactions')
-                    .where('userId', isEqualTo: _auth.currentUser?.uid)
-                    .where('transaction_date',
-                        isGreaterThanOrEqualTo: Timestamp.fromDate(
-                            DateTime.now().subtract(Duration(
-                                days: 30)))) // Misalnya untuk 30 hari terakhir
-                    .snapshots(),
+              child: FutureBuilder<QuerySnapshot>(
+                future: _firestore.collection('transactions').get(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
@@ -218,15 +206,26 @@ class _FinancialReportPageState extends State<FinancialReportPage> {
                     return Center(child: Text('Tidak ada transaksi'));
                   }
 
-                  var transactions = snapshot.data!.docs;
+                  var transactions = snapshot.data!.docs.where((doc) {
+                    var data = doc.data() as Map<String, dynamic>;
+                    DateTime transactionDate =
+                        DateTime.parse(data['transaction_date']);
+                    return transactionDate.isAfter(_startDate!) &&
+                        transactionDate
+                            .isBefore(_endDate!.add(Duration(days: 1)));
+                  }).toList();
+
+                  if (transactions.isEmpty) {
+                    return Center(child: Text('Tidak ada transaksi'));
+                  }
+
                   return ListView.builder(
                     itemCount: transactions.length,
                     itemBuilder: (context, index) {
                       var transaction =
                           transactions[index].data() as Map<String, dynamic>;
                       DateTime transactionDate =
-                          (transaction['transaction_date'] as Timestamp)
-                              .toDate();
+                          DateTime.parse(transaction['transaction_date']);
                       double amount = transaction['amount'].toDouble();
                       String description = transaction['description'];
                       String type = transaction['type'] == 1
@@ -236,7 +235,8 @@ class _FinancialReportPageState extends State<FinancialReportPage> {
                       return ListTile(
                         title: Text(description),
                         subtitle: Text(
-                            '${DateFormat('dd MMM yyyy').format(transactionDate)}'),
+                          '${DateFormat('dd MMM yyyy').format(transactionDate)}',
+                        ),
                         trailing: Text(
                           formatCurrency(amount),
                           style: TextStyle(

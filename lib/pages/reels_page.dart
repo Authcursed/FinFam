@@ -7,19 +7,34 @@ class ReelsPage extends StatelessWidget {
   // Data video
   final List<Map<String, String>> videoData = [
     {
-      "title": "Perkenalan Flutter SDK",
-      "thumbnail": "https://img.youtube.com/vi/jYPsr5mcdS8/0.jpg",
-      "videoUrl": "https://www.youtube.com/watch?v=jYPsr5mcdS8"
+      "title": "Cara Ngatur Duit Tanpa Ribet",
+      "thumbnail": "https://img.youtube.com/vi/sCUghGYNGC4/0.jpg",
+      "videoUrl": "https://www.youtube.com/watch?v=sCUghGYNGC4"
     },
     {
-      "title": "FLUTTER - TUTORIAL by Bauroziq",
-      "thumbnail": "https://img.youtube.com/vi/Mu70YL4Q8Jg/0.jpg",
-      "videoUrl": "https://www.youtube.com/watch?v=Mu70YL4Q8Jg"
+      "title": "15 TIPS NGATUR DUIT ALA RADITYA DIKA",
+      "thumbnail": "https://img.youtube.com/vi/WmIdpjLIVMI/0.jpg",
+      "videoUrl": "https://www.youtube.com/watch?v=WmIdpjLIVMI"
     },
     {
-      "title": "Tutorial Dart by Programmer Zaman Now",
-      "thumbnail": "https://img.youtube.com/vi/-mzXdI27tyk/0.jpg",
-      "videoUrl": "https://www.youtube.com/watch?v=-mzXdI27tyk"
+      "title": "5 Kesalahan Finansial Kami di Usia 20an",
+      "thumbnail": "https://img.youtube.com/vi/iCrl9roCgg8/0.jpg",
+      "videoUrl": "https://www.youtube.com/watch?v=iCrl9roCgg8"
+    },
+    {
+      "title": "Gw 35 Tahun, Andai Umur 20an udah tau ini",
+      "thumbnail": "https://img.youtube.com/vi/23qG2wQQ9QA/0.jpg",
+      "videoUrl": "https://www.youtube.com/watch?v=23qG2wQQ9QA"
+    },
+    {
+      "title": "4 Bisnis Tanpa Modal Untuk Pemula",
+      "thumbnail": "https://img.youtube.com/vi/wosPSj7fF34/0.jpg",
+      "videoUrl": "https://www.youtube.com/watch?v=wosPSj7fF34"
+    },
+    {
+      "title": "Potensi Cuan Jutaan dari 5 Side Hustles Ini",
+      "thumbnail": "https://img.youtube.com/vi/EJFxY_tMY70/0.jpg",
+      "videoUrl": "https://www.youtube.com/watch?v=EJFxY_tMY70"
     },
   ];
 

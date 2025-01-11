@@ -182,6 +182,7 @@ class _MainPageState extends State<MainPage> {
                 decoration: BoxDecoration(
                   color: Colors.blue,
                 ),
+                padding: EdgeInsets.symmetric(vertical: 10),
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
